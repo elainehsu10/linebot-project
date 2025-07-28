@@ -25,6 +25,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 請確保你的服務帳戶金鑰 .json 檔案【不】在此目錄中，不要將金鑰複製到映像檔裡。
 COPY . .
 
+# 確保必要的目錄存在
+RUN mkdir -p logs temp_images
+
 # 設定環境變數
 # Cloud Run 會自動處理驗證，不需要 GOOGLE_APPLICATION_CREDENTIALS
 ENV PORT=8080
