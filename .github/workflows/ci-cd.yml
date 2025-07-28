@@ -162,17 +162,14 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
     
-    - name: Configure Docker for GCR
+    - name: Enable required APIs
       run: |
-        gcloud auth configure-docker gcr.io
-        gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin gcr.io
+        gcloud services enable cloudbuild.googleapis.com
+        gcloud services enable containerregistry.googleapis.com
     
     - name: Build and push to staging
       run: |
-        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:staging-${{ github.sha }} .
-        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:staging-${{ github.sha }}
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
+        gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:staging-${{ github.sha }} .
     
     - name: Deploy to Cloud Run Staging
       run: |
@@ -220,17 +217,15 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
     
-    - name: Configure Docker for GCR
+    - name: Enable required APIs
       run: |
-        gcloud auth configure-docker gcr.io
-        gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin gcr.io
+        gcloud services enable cloudbuild.googleapis.com
+        gcloud services enable containerregistry.googleapis.com
     
     - name: Build and push to production
       run: |
-        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:prod-${{ github.sha }} .
-        docker tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:prod-${{ github.sha }} gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:latest
-        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:prod-${{ github.sha }}
-        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:latest
+        gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:prod-${{ github.sha }} .
+        gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:latest .
     
     - name: Deploy to Cloud Run Production
       run: |
