@@ -153,20 +153,26 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+    
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true
     
-    - name: Configure Docker
-      run: gcloud auth configure-docker
+    - name: Configure Docker for GCR
+      run: |
+        gcloud auth configure-docker gcr.io
+        gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin gcr.io
     
     - name: Build and push to staging
       run: |
         docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:staging-${{ github.sha }} .
         docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:staging-${{ github.sha }}
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
     
     - name: Deploy to Cloud Run Staging
       run: |
@@ -205,15 +211,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+    
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        export_default_credentials: true
     
-    - name: Configure Docker
-      run: gcloud auth configure-docker
+    - name: Configure Docker for GCR
+      run: |
+        gcloud auth configure-docker gcr.io
+        gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin gcr.io
     
     - name: Build and push to production
       run: |
