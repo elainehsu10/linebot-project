@@ -162,10 +162,11 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
     
-    - name: Enable required APIs
+    - name: Check APIs (skip if permission denied)
       run: |
-        gcloud services enable cloudbuild.googleapis.com
-        gcloud services enable containerregistry.googleapis.com
+        gcloud services enable cloudbuild.googleapis.com || echo "API already enabled or permission denied"
+        gcloud services enable containerregistry.googleapis.com || echo "API already enabled or permission denied"
+      continue-on-error: true
     
     - name: Build and push to staging
       run: |
@@ -217,10 +218,11 @@ jobs:
     - name: Set up Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
     
-    - name: Enable required APIs
+    - name: Check APIs (skip if permission denied)
       run: |
-        gcloud services enable cloudbuild.googleapis.com
-        gcloud services enable containerregistry.googleapis.com
+        gcloud services enable cloudbuild.googleapis.com || echo "API already enabled or permission denied"
+        gcloud services enable containerregistry.googleapis.com || echo "API already enabled or permission denied"
+      continue-on-error: true
     
     - name: Build and push to production
       run: |
