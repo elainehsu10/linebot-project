@@ -168,14 +168,10 @@ jobs:
         gcloud services enable containerregistry.googleapis.com || echo "API already enabled or permission denied"
       continue-on-error: true
     
-    - name: Build and push to staging
-      run: |
-        gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:staging-${{ github.sha }} .
-    
-    - name: Deploy to Cloud Run Staging
+    - name: Build and deploy to staging
       run: |
         gcloud run deploy linebot-app-staging \
-          --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:staging-${{ github.sha }} \
+          --source . \
           --platform managed \
           --region us-central1 \
           --allow-unauthenticated \
@@ -197,8 +193,8 @@ jobs:
           --set-env-vars="DB_NAME=${{ secrets.DB_NAME }}" \
           --set-env-vars="DB_PORT=${{ secrets.DB_PORT }}" \
           --set-env-vars="SECRET_KEY=${{ secrets.SECRET_KEY }}" \
-          --set-env-vars="REMINDER_SECRET_TOKEN=${{ secrets.REMINDER_SECRET_TOKEN }}" \
-          --tag staging
+          --set-env-vars="REMINDER_SECRET_TOKEN=${{ secrets.REMINDER_SECRET_TOKEN }}"
+    
 
   deploy-production:
     needs: [test, security-scan]
@@ -224,15 +220,10 @@ jobs:
         gcloud services enable containerregistry.googleapis.com || echo "API already enabled or permission denied"
       continue-on-error: true
     
-    - name: Build and push to production
-      run: |
-        gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:prod-${{ github.sha }} .
-        gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:latest .
-    
-    - name: Deploy to Cloud Run Production
+    - name: Build and deploy to production
       run: |
         gcloud run deploy linebot-app \
-          --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/linebot-app:prod-${{ github.sha }} \
+          --source . \
           --platform managed \
           --region us-central1 \
           --allow-unauthenticated \
@@ -254,8 +245,8 @@ jobs:
           --set-env-vars="DB_NAME=${{ secrets.DB_NAME }}" \
           --set-env-vars="DB_PORT=${{ secrets.DB_PORT }}" \
           --set-env-vars="SECRET_KEY=${{ secrets.SECRET_KEY }}" \
-          --set-env-vars="REMINDER_SECRET_TOKEN=${{ secrets.REMINDER_SECRET_TOKEN }}" \
-          --tag production
+          --set-env-vars="REMINDER_SECRET_TOKEN=${{ secrets.REMINDER_SECRET_TOKEN }}"
+    
     
     - name: Notify deployment success
       run: |
